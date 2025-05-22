@@ -1,11 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const CarInsuranceController = require('../controllers/CarInsuranceController');
+const {
+  addPolicy,
+  getAllPolicies,
+  getFilteredPolicies,
+  savePolicies
+} = require('../controllers/CarInsuranceController');
 
-router.post('/create', CarInsuranceController.createPolicy);
-router.get('/getall', CarInsuranceController.getAllPolicies);
-router.get('/getid', CarInsuranceController.getPolicyById);
-router.put('/update', CarInsuranceController.updatePolicy);
-router.delete('/delete', CarInsuranceController.deletePolicy);
+// POST for adding new policies (useful for admin/initial data)
+router.post('/add', addPolicy);
+
+// GET all policies
+router.get('/getall', getAllPolicies);
+
+// GET filtered policies
+router.get('/filter', getFilteredPolicies);
+
+
+router.post('/save', savePolicies);
 
 module.exports = router;

@@ -1,59 +1,67 @@
-const CarInsurancePolicy = require('../model/CarInsuranceModel');
+const CarInsurance = require('../model/CarInsuranceModel');
 
-// Create a new policy
-exports.createPolicy = async (req, res) => {
+// Add a new policy (for admin or seeding)
+exports.addPolicy = async (req, res) => {
   try {
-    const policy = new CarInsurancePolicy(req.body);
-    const savedPolicy = await policy.save();
-    res.status(201).json(savedPolicy);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+    const newPolicy = new CarInsurance(req.body);
+    await newPolicy.save();
+    res.status(201).json(newPolicy);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create policy' });
   }
 };
 
 // Get all policies
 exports.getAllPolicies = async (req, res) => {
   try {
-    const policies = await CarInsurancePolicy.find();
+    const policies = await CarInsurance.find();
     res.json(policies);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch policies' });
   }
 };
 
-// Get policy by ID
-exports.getPolicyById = async (req, res) => {
+// Get filtered policies
+exports.getFilteredPolicies = async (req, res) => {
+  const { brand, model, year } = req.query;
+
   try {
-    const policy = await CarInsurancePolicy.findById(req.params.id);
-    if (!policy) return res.status(404).json({ message: "Policy not found" });
-    res.json(policy);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    const filter = {};
+    if (brand) filter.brand = brand;
+    if (model) filter.model = model;
+    if (year) filter.year = Number(year);
+    // 10=>2022  20=>2025
+
+    //fecth data 10 2025 +10 =20
+
+    const policies = await CarInsurance.find(filter);
+    res.status(200).json(policies);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch filtered policies' });
   }
 };
 
-// Update policy
-exports.updatePolicy = async (req, res) => {
+
+exports.savePolicies = async (req, res) => {
   try {
-    const updatedPolicy = await CarInsurancePolicy.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    if (!updatedPolicy) return res.status(404).json({ message: "Policy not found" });
-    res.json(updatedPolicy);
+    const { carNumber, carBrand, model, fuel, city, year, policyName, insurer, amount } = req.body;
+
+    const carInsurance = new CarInsurance({
+      carNumber,
+      carBrand,
+      model,
+      fuel,
+      city,
+      year,
+      policyName,
+      insurer,
+      amount
+    });
+
+    await carInsurance.save();
+    res.status(201).json({ message: 'Car insurance details saved successfully' });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to save car insurance details' });
   }
 };
 
-// Delete policy
-exports.deletePolicy = async (req, res) => {
-  try {
-    const deletedPolicy = await CarInsurancePolicy.findByIdAndDelete(req.params.id);
-    if (!deletedPolicy) return res.status(404).json({ message: "Policy not found" });
-    res.json({ message: "Policy deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
